@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sample task walkthrough</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8E%B9%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+.doc { max-width: 720px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 40px) 60px; }
+.doc h1 { font-family: Fraunces, Georgia, serif; font-weight: 650; font-size: 30px; margin: 0 0 4px; }
+.doc .lede { color: var(--muted); margin: 0 0 28px; }
+.doc h2 { font-family: Fraunces, Georgia, serif; font-weight: 650; font-size: 20px; margin: 30px 0 8px; }
+.doc ol, .doc ul { padding-left: 22px; }
+.doc li { margin: 6px 0; }
+.doc .note { background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--brass); border-radius: 6px; padding: 12px 16px; color: var(--muted); font-size: 14px; }
+.doc code { background: #f0ece3; border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="top">
+	<div class="top__brand">
+		<span class="top__mark">&#119070;</span>
+		<div>
+			<h1 class="top__title"><a href="index.html" style="color:inherit;text-decoration:none">Note Trainer</a></h1>
+			<p class="top__sub">Sample task walkthrough</p>
+		</div>
+	</div>
+</header>
+<main class="doc">
+	<h1>How I would approach a Musicca task</h1>
+	<p class="lede">Worked example using one of the one-off projects mentioned in the job post: automated reminder emails to users. This is how the task would look from requirement to delivery.</p>
+
+	<h2>1. Restate the requirement and agree on scope</h2>
+	<p>Before writing code I would send back a short scope note: <em>"Users who have not practised for N days receive one reminder email, at most once per M days, in their own interface language, with an unsubscribe link. Out of scope for v1: digest content, A/B testing."</em> One paragraph, so we catch misunderstandings while they are still cheap.</p>
+
+	<h2>2. Questions I would ask you first</h2>
+	<ul>
+		<li>Which table records the last exercise activity per user, or should the query derive it from the exercise results log?</li>
+		<li>Is there an existing mailer (SMTP provider, Joomla mail, or a service like Postmark) and are transactional templates already translated?</li>
+		<li>Should schools/class students be excluded, or reminded through their teacher instead?</li>
+		<li>What is the expected volume per day, so batching and rate limits are sized correctly?</li>
+	</ul>
+
+	<h2>3. Technical approach (Joomla)</h2>
+	<ol>
+		<li>A small component or plugin holding the logic, triggered by <code>Joomla Task Scheduler</code> on Joomla 4/5, or a CLI entry point run from cron on older versions, so it works before and after the planned Joomla upgrade.</li>
+		<li>One indexed MySQL query to select due users (last activity &lt; N days, not reminded in M days, subscribed), processed in batches with a per-run cap.</li>
+		<li>Reminder state stored in a dedicated table (user id, sent at, template), never in session or user params, so re-runs are idempotent.</li>
+		<li>Templates use the site's existing language system; unsubscribe sets a flag checked by the selection query.</li>
+		<li>Logging of each run (selected / sent / skipped / failed) so you can see what happened without asking me.</li>
+	</ol>
+
+	<h2>4. Delivery and review</h2>
+	<ul>
+		<li>Work on a feature branch with small, readable commits; you review a diff, not a mystery.</li>
+		<li>Tested first against a staging copy with a mail trap, including the re-run and unsubscribe paths.</li>
+		<li>Rollout with the batch cap low for the first days, then raised once the numbers look right.</li>
+		<li>A short handover note: what changed, where it lives, how to pause it.</li>
+	</ul>
+
+	<p class="note">The same shape applies to exercise work: restate, ask the two or three questions that matter, change the existing code in place with small commits, and prove the behaviour before it ships. The <a href="index.html">Note Trainer demo</a> shows the front-end and music-theory side of that.</p>
+</main>
+<footer class="foot">
+	<span>Built by <a href="https://mahmoudebaa.com">Mahmoud Ebaa</a></span>
+	<span class="foot__sep">&middot;</span>
+	<a href="index.html">&larr; Back to the demo</a>
+</footer>
+</body>
+</html>

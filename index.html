@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Note Trainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Read notes on the staff and answer on your real piano over USB or Bluetooth MIDI. A music-exercise demo by Mahmoud Ebaa.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8E%B9%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="top">
+	<div class="top__brand">
+		<span class="top__mark">&#119070;</span>
+		<div>
+			<h1 class="top__title">Note Trainer</h1>
+			<p class="top__sub">Read the note, play the note. A music-exercise demo.</p>
+		</div>
+	</div>
+	<div class="top__midi">
+		<button type="button" class="midi-btn" id="midi-connect" hidden>Connect a piano</button>
+		<span class="midi-pill" id="midi-pill" hidden></span>
+	</div>
+</header>
+
+<main class="app" id="app">
+	<!-- Level select -->
+	<section class="screen screen--levels" id="screen-levels">
+		<h2 class="screen__heading">Choose an exercise</h2>
+		<div class="levels" id="levels"></div>
+		<p class="levels__hint">Answer on the on-screen piano, your computer keyboard (A&ndash;K, W/E/T/Y/U, Z/X shifts octave), or a real piano connected over USB or <b>Bluetooth MIDI</b>.</p>
+	</section>
+
+	<!-- Exercise -->
+	<section class="screen screen--play" id="screen-play" hidden>
+		<div class="hud">
+			<button type="button" class="hud__back" id="btn-back" aria-label="Back to exercises">&larr;</button>
+			<div class="hud__level" id="hud-level"></div>
+			<div class="hud__stats">
+				<span id="hud-progress">1 / 15</span>
+				<span class="hud__streak" id="hud-streak" hidden>&#9733; 0</span>
+			</div>
+		</div>
+		<div class="sheet">
+			<div class="sheet__staff" id="staff"></div>
+			<div class="sheet__feedback" id="feedback" aria-live="polite"></div>
+			<button type="button" class="sheet__replay" id="btn-replay" hidden>&#9654; Replay note</button>
+		</div>
+	</section>
+
+	<!-- Results -->
+	<section class="screen screen--done" id="screen-done" hidden>
+		<h2 class="screen__heading" id="done-title">Nice work</h2>
+		<div class="results">
+			<div class="result"><b id="res-score">0</b><span>correct of <span id="res-total">15</span></span></div>
+			<div class="result"><b id="res-streak">0</b><span>best streak</span></div>
+			<div class="result"><b id="res-time">0s</b><span>time</span></div>
+		</div>
+		<div class="done__actions">
+			<button type="button" class="btn btn--primary" id="btn-again">Play again</button>
+			<button type="button" class="btn" id="btn-levels">Other exercises</button>
+		</div>
+	</section>
+</main>
+
+<div class="piano-wrap" id="piano-wrap" hidden>
+	<div class="piano" id="piano" role="group" aria-label="Piano keyboard"></div>
+</div>
+
+<footer class="foot">
+	<span>Built by <a href="https://mahmoudebaa.com">Mahmoud Ebaa</a> as a working demo</span>
+	<span class="foot__sep">&middot;</span>
+	<a href="task.html">How I would approach a Musicca task &rarr;</a>
+</footer>
+
+<script src="assets/vendor/vexflow-min.js"></script>
+<script src="assets/vendor/howler.min.js"></script>
+<script src="assets/js/theory.js"></script>
+<script src="assets/js/audio.js"></script>
+<script src="assets/js/midi.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
