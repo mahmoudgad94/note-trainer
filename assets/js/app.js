@@ -13,8 +13,26 @@
 	var VF = window.Vex && window.Vex.Flow;
 
 	var ROUND_LENGTH = 15;
+	var SAMPLE_MIN = T.nameToMidi('C2');
+	var SAMPLE_MAX = T.nameToMidi('C6');
 	var PIANO_FROM = T.nameToMidi('C3');
 	var PIANO_TO = T.nameToMidi('C6');
+
+	/** Snap the keyboard to the level's range (whole octaves, at least two). */
+	function pianoRangeFor(level) {
+		var lo = Math.min.apply(null, level.notes);
+		var hi = Math.max.apply(null, level.notes);
+		lo -= T.pitchClass(lo);
+		hi += (12 - T.pitchClass(hi)) % 12;
+		while (hi - lo < 24) {
+			if (hi + 12 <= SAMPLE_MAX) {
+				hi += 12;
+			} else {
+				lo -= 12;
+			}
+		}
+		return { from: Math.max(SAMPLE_MIN, lo), to: Math.min(SAMPLE_MAX, hi) };
+	}
 
 	var els = {
 		screens: {
@@ -128,7 +146,9 @@
 
 	/* ---------- piano widget ---------- */
 
-	function buildPiano() {
+	function buildPiano(from, to) {
+		PIANO_FROM = from || PIANO_FROM;
+		PIANO_TO = to || PIANO_TO;
 		els.piano.innerHTML = '';
 		var whites = [];
 		var m;
@@ -167,16 +187,18 @@
 			black.className = 'pk pk--black';
 			black.dataset.midi = m;
 			black.setAttribute('aria-label', T.midiToName(m));
-			black.style.left = ((whiteIndex + 1) * whiteWidth - 1.02) + '%';
+			black.style.width = (whiteWidth * 0.62) + '%';
+			black.style.left = ((whiteIndex + 1) * whiteWidth - whiteWidth * 0.31) + '%';
 			els.piano.appendChild(black);
 		}
-		els.piano.addEventListener('pointerdown', function (e) {
-			var key = e.target.closest('.pk');
-			if (key) {
-				answer(parseInt(key.dataset.midi, 10));
-			}
-		});
 	}
+
+	els.piano.addEventListener('pointerdown', function (e) {
+		var key = e.target.closest('.pk');
+		if (key) {
+			answer(parseInt(key.dataset.midi, 10));
+		}
+	});
 
 	function keyEl(midi) {
 		return els.piano.querySelector('.pk[data-midi="' + midi + '"]');
@@ -266,6 +288,9 @@
 		state.bestStreak = 0;
 		state.startedAt = Date.now();
 		PianoAudio.preload(level.notes);
+		var range = pianoRangeFor(level);
+		buildPiano(range.from, range.to);
+		keyboardBase = Math.max(range.from, Math.min(T.nameToMidi('C4'), range.to - 12));
 		els.hudLevel.textContent = level.group + ' · ' + level.name;
 		els.replay.hidden = !level.ear;
 		show('play');

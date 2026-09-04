@@ -282,7 +282,6 @@ a { color: var(--felt); }
 .pk--black {
 	position: absolute;
 	top: 0;
-	width: 2.05%;
 	height: 62%;
 	background: linear-gradient(#3a3733, #171512);
 	border: 1px solid #000;
