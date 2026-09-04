@@ -325,7 +325,14 @@ a { color: var(--felt); }
 @media (max-width: 640px) {
 	.top { flex-direction: column; align-items: flex-start; }
 	.top__midi { align-self: stretch; }
-	.pk__label { display: none; }
+
+	/* Big touch keys in a horizontally scrollable strip, like a real keyboard. */
+	.piano-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+	.piano {
+		min-width: calc(var(--white-count, 15) * 44px);
+		height: 138px;
+		margin: 0;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {

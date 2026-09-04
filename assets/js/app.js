@@ -158,6 +158,7 @@
 			}
 		}
 		var whiteWidth = 100 / whites.length;
+		els.piano.style.setProperty('--white-count', whites.length);
 		whites.forEach(function (midi) {
 			var key = document.createElement('button');
 			key.type = 'button';
@@ -199,6 +200,23 @@
 			answer(parseInt(key.dataset.midi, 10));
 		}
 	});
+
+	/** On narrow screens the piano scrolls; start centred on the level's range. */
+	function centerPianoOn(level) {
+		var wrap = els.pianoWrap;
+		if (wrap.scrollWidth <= wrap.clientWidth) {
+			return;
+		}
+		var sorted = level.notes.slice().sort(function (a, b) { return a - b; });
+		var median = sorted[Math.floor(sorted.length / 2)];
+		while (median > PIANO_FROM && T.isBlackKey(median)) {
+			median--;
+		}
+		var key = keyEl(median);
+		if (key) {
+			wrap.scrollLeft = key.offsetLeft - wrap.clientWidth / 2 + key.offsetWidth / 2;
+		}
+	}
 
 	function keyEl(midi) {
 		return els.piano.querySelector('.pk[data-midi="' + midi + '"]');
@@ -294,6 +312,7 @@
 		els.hudLevel.textContent = level.group + ' · ' + level.name;
 		els.replay.hidden = !level.ear;
 		show('play');
+		centerPianoOn(level);
 		nextQuestion();
 	}
 
