@@ -9,6 +9,11 @@ A small, working music-exercise demo: read a note on the staff, then play it on 
 - Plain dependency-free JavaScript (no build step), the theory layer is unit-tested (`node --test tests/`).
 - A worked example of how I approach maintenance tasks: [task walkthrough](https://mahmoudgad94.github.io/note-trainer/task.html).
 
+## Testing without a piano
+
+Use the [virtual MIDI testing guide](tools/README.md) to answer exercises from
+the terminal without a physical piano.
+
 Built by [Mahmoud Ebaa](https://mahmoudebaa.com).
 
 Piano samples from [midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts) (MIT).
