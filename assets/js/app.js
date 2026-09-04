@@ -48,6 +48,7 @@
 		piano: document.getElementById('piano'),
 		octPrev: document.getElementById('oct-prev'),
 		octNext: document.getElementById('oct-next'),
+		rotateHint: document.getElementById('rotate-hint'),
 		midiConnect: document.getElementById('midi-connect'),
 		midiPill: document.getElementById('midi-pill'),
 	};
@@ -210,6 +211,8 @@
 			els.octPrev.disabled = scroll.scrollLeft <= 2;
 			els.octNext.disabled = scroll.scrollLeft >= scroll.scrollWidth - scroll.clientWidth - 2;
 		}
+		var portraitPhone = window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches;
+		els.rotateHint.hidden = ! ( pageable && portraitPhone );
 	}
 
 	function octaveStep() {
@@ -286,25 +289,39 @@
 
 	/* ---------- MIDI ---------- */
 
+	var midiRequested = false;
+
+	function setMidiPill(text, tone) {
+		els.midiPill.textContent = text;
+		els.midiPill.className = 'midi-pill' + (tone ? ' midi-pill--' + tone : '');
+		els.midiPill.hidden = false;
+	}
+
 	function refreshMidiPill(names) {
 		if (names && names.length) {
-			els.midiPill.textContent = names.join(', ');
-			els.midiPill.hidden = false;
+			setMidiPill(names.join(', '), '');
 			els.midiConnect.hidden = true;
-		} else {
-			els.midiPill.hidden = true;
-			els.midiConnect.hidden = false;
-			els.midiConnect.textContent = 'Connect a piano';
+		} else if (midiRequested) {
+			// Access granted but nothing attached: keep listening, hot-plug connects it.
+			setMidiPill('No piano found yet — plug in USB or pair Bluetooth and it connects automatically', 'warn');
+			els.midiConnect.hidden = true;
 		}
 	}
 
 	if (window.MidiInput && MidiInput.supported()) {
 		els.midiConnect.hidden = false;
 		els.midiConnect.addEventListener('click', function () {
-			els.midiConnect.textContent = 'Connecting…';
-			MidiInput.connect().then(refreshMidiPill, function () {
-				els.midiConnect.textContent = 'MIDI unavailable';
-			});
+			els.midiConnect.disabled = true;
+			MidiInput.connect().then(
+				function (names) {
+					midiRequested = true;
+					refreshMidiPill(names);
+				},
+				function () {
+					els.midiConnect.hidden = true;
+					setMidiPill('Piano input is blocked — allow MIDI access in the browser and try again', 'err');
+				}
+			);
 		});
 		MidiInput.onDevicesChange(refreshMidiPill);
 		MidiInput.onNote(function (e) {
