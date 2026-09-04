@@ -32,7 +32,7 @@
 </header>
 <main class="doc">
 	<h1>What I noticed on Musicca</h1>
-	<p class="lede">Three practical opportunities I noticed while reviewing the public exercise experience.</p>
+	<p class="lede">Six practical opportunities I noticed while reviewing the public exercise experience.</p>
 
 	<h2>1. Audio library</h2>
 	<p>The exercise pages load Howler.js 2.0.9, released in 2017. Upgrading to Howler 2.2.x fixes autoplay-unlock and Safari/iOS AudioContext issues that ear-training exercises commonly encounter. I would treat this as a contained, low-risk first task: update the library, verify playback and unlock behaviour across supported browsers, and ship it independently. This demo uses Howler 2.2.4 with the same sample-based approach.</p>
@@ -43,7 +43,16 @@
 	<h2>3. Input methods</h2>
 	<p>The exercises are answered by clicking. Adding Web MIDI support for USB and Bluetooth pianos would let students answer on a real instrument, as this demo shows. I would add it as an optional input path into the existing answer flow, preserving the current controls so it degrades gracefully where unsupported; on iOS, students would continue using the on-screen keys.</p>
 
-	<p class="note">These are outside-in observations from the public site, verified in the browser; happy to be corrected on internals.</p>
+	<h2>4. Locale context leak</h2>
+	<p>English exercise pages, including <code>/exercises</code> and <code>/exercise/16</code>, are served with <code>html lang="en"</code>, but their embedded Joomla script options contain Russian <code>JLIB_FORM_FIELD_INVALID</code> text and a keepalive URI pointing to <code>/ru/component/ajax/</code>. This is a low-risk, high-signal first task.<br><strong>Fix:</strong> Build Joomla text and keepalive options from the active request locale and add response-level regression tests for representative language routes.</p>
+
+	<h2>5. Search engines are blocked from rendering assets</h2>
+	<p><code>robots.txt</code> disallows <code>/components/</code> and <code>/modules/</code>, yet public exercise pages load CSS and JavaScript from <code>com_parentcontrol</code> and <code>mod_leaderboard</code> under those paths, so crawlers render the pages without them.<br><strong>Fix:</strong> Allow the public asset subpaths while keeping genuinely private routes blocked.</p>
+
+	<h2>6. Multilingual sitemap and hreflang issues</h2>
+	<p>The robots-declared sitemap at <code>/sitemaps/sitemap.xml</code> contains invalid values such as <code>hreflang="exercises"</code> and <code>hreflang="*"</code> with literal <code>/*/</code> URLs, has no <code>lastmod</code> or <code>x-default</code>, and exposes 493 pages while <code>/sitemap.xml</code> exposes 439. For a site in 21 languages, this affects how translated pages are discovered and ranked.<br><strong>Fix:</strong> Publish one authoritative, BCP 47-valid sitemap from a locale-aware generator, with consistent canonicals and reciprocal hreflang on pages.</p>
+
+	<p class="note">These six outside-in observations are based on the public site and verified in the browser; happy to be corrected on internals.</p>
 </main>
 <footer class="foot">
 	<span>Built by <a href="https://mahmoudebaa.com">Mahmoud Ebaa</a></span>
