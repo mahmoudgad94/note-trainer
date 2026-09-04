@@ -63,3 +63,38 @@ test('makeQuestion avoids immediate repeats and spells consistently', () => {
 		prev = q;
 	}
 });
+
+test('interval definitions use the expected semitone distances', () => {
+	assert.equal(T.INTERVALS.m3.semitones, 3);
+	assert.equal(T.INTERVALS.P5.semitones, 7);
+	assert.equal(T.INTERVALS.M7.semitones, 11);
+});
+
+test('interval questions include the instruction fields and a matching sharp spelling', () => {
+	const level = T.LEVELS.find((l) => l.id === 'intervals-1');
+	const q = T.makeQuestion(level, () => 0);
+
+	assert.equal(q.rootMidi, 60);
+	assert.equal(q.rootName, 'C4');
+	assert.equal(q.intervalName, 'minor 2nd');
+	assert.equal(q.midi, 61);
+	assert.equal(q.name, 'C#4');
+	assert.equal(T.nameToMidi(q.name), q.midi);
+});
+
+test('interval levels include every possible target in their playable note range', () => {
+	const levels = T.LEVELS.filter((level) => level.intervals);
+
+	assert.deepEqual(levels.map((level) => level.id), ['intervals-1', 'intervals-2']);
+	for (const level of levels) {
+		const lo = Math.min(...level.notes);
+		const hi = Math.max(...level.notes);
+		for (const rootMidi of level.roots) {
+			for (const intervalId of level.intervals) {
+				const target = rootMidi + T.INTERVALS[intervalId].semitones;
+				assert.ok(target >= lo && target <= hi, level.id + ' target ' + target + ' is in range');
+				assert.ok(level.notes.includes(target), level.id + ' target ' + target + ' is playable');
+			}
+		}
+	}
+});

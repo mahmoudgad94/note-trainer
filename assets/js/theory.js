@@ -8,6 +8,20 @@
 	var SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 	var FLAT_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 	var LETTER_SEMITONE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+	/** Named intervals available to interval exercises. */
+	var INTERVALS = {
+		m2: { semitones: 1, name: 'minor 2nd' },
+		M2: { semitones: 2, name: 'major 2nd' },
+		m3: { semitones: 3, name: 'minor 3rd' },
+		M3: { semitones: 4, name: 'major 3rd' },
+		P4: { semitones: 5, name: 'perfect 4th' },
+		P5: { semitones: 7, name: 'perfect 5th' },
+		m6: { semitones: 8, name: 'minor 6th' },
+		M6: { semitones: 9, name: 'major 6th' },
+		m7: { semitones: 10, name: 'minor 7th' },
+		M7: { semitones: 11, name: 'major 7th' },
+		P8: { semitones: 12, name: 'perfect octave' },
+	};
 
 	function octaveOf(midi) {
 		return Math.floor(midi / 12) - 1;
@@ -82,6 +96,25 @@
 		return out;
 	}
 
+	/** Sorted unique targets produced by combining roots and intervals. */
+	function intervalTargets(roots, intervalIds) {
+		var out = [];
+		roots.forEach(function (rootMidi) {
+			intervalIds.forEach(function (intervalId) {
+				var target = rootMidi + INTERVALS[intervalId].semitones;
+				if (out.indexOf(target) === -1) {
+					out.push(target);
+				}
+			});
+		});
+		return out.sort(function (a, b) { return a - b; });
+	}
+
+	var INTERVALS_1 = ['m2', 'M2', 'm3', 'M3', 'P4', 'P5'];
+	var INTERVALS_2 = INTERVALS_1.concat(['m6', 'M6', 'm7', 'M7', 'P8']);
+	var INTERVAL_ROOTS_1 = naturalsBetween('C4', 'C5');
+	var INTERVAL_ROOTS_2 = naturalsBetween('A3', 'C5');
+
 	/** Exercise levels. Each question picks a MIDI note and a spelling. */
 	var LEVELS = [
 		{
@@ -141,6 +174,26 @@
 			spell: 'mixed',
 		},
 		{
+			id: 'intervals-1',
+			group: 'Intervals',
+			name: 'Level 1',
+			clef: 'treble',
+			intervals: INTERVALS_1,
+			roots: INTERVAL_ROOTS_1,
+			notes: intervalTargets(INTERVAL_ROOTS_1, INTERVALS_1),
+			spell: 'sharp',
+		},
+		{
+			id: 'intervals-2',
+			group: 'Intervals',
+			name: 'Level 2',
+			clef: 'treble',
+			intervals: INTERVALS_2,
+			roots: INTERVAL_ROOTS_2,
+			notes: intervalTargets(INTERVAL_ROOTS_2, INTERVALS_2),
+			spell: 'sharp',
+		},
+		{
 			id: 'ear-1',
 			group: 'Ear training',
 			name: 'Pitch 1',
@@ -155,6 +208,22 @@
 	function makeQuestion(level, rng, previousMidi) {
 		rng = rng || Math.random;
 		var midi = previousMidi;
+		var rootMidi;
+		var interval;
+		if (level.intervals) {
+			for (var intervalGuard = 0; intervalGuard < 20 && midi === previousMidi; intervalGuard++) {
+				rootMidi = level.roots[Math.floor(rng() * level.roots.length)];
+				interval = INTERVALS[level.intervals[Math.floor(rng() * level.intervals.length)]];
+				midi = rootMidi + interval.semitones;
+			}
+			return {
+				midi: midi,
+				rootMidi: rootMidi,
+				rootName: midiToName(rootMidi),
+				intervalName: interval.name,
+				name: midiToName(midi),
+			};
+		}
 		for (var guard = 0; guard < 20 && midi === previousMidi; guard++) {
 			midi = level.notes[Math.floor(rng() * level.notes.length)];
 		}
@@ -178,6 +247,7 @@
 		accidentalsBetween: accidentalsBetween,
 		pitchClass: pitchClass,
 		octaveOf: octaveOf,
+		INTERVALS: INTERVALS,
 		LEVELS: LEVELS,
 		makeQuestion: makeQuestion,
 	};

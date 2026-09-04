@@ -121,7 +121,8 @@
 			return; // ear training shows an empty stave until answered
 		}
 
-		var vex = T.toVexKey(question.name);
+		var noteName = state.level.intervals ? question.rootName : question.name;
+		var vex = T.toVexKey(noteName);
 		var note = new VF.StaveNote({
 			clef: state.level.clef,
 			keys: [vex.key],
@@ -303,7 +304,7 @@
 			els.midiConnect.hidden = true;
 		} else if (midiRequested) {
 			// Access granted but nothing attached: keep listening, hot-plug connects it.
-			setMidiPill('No piano found yet — plug in USB or pair Bluetooth and it connects automatically', 'warn');
+			setMidiPill('No piano found yet. Plug in USB or pair Bluetooth and it connects automatically', 'warn');
 			els.midiConnect.hidden = true;
 		}
 	}
@@ -319,7 +320,7 @@
 				},
 				function () {
 					els.midiConnect.hidden = true;
-					setMidiPill('Piano input is blocked — allow MIDI access in the browser and try again', 'err');
+					setMidiPill('Piano input is blocked. Allow MIDI access in the browser and try again', 'err');
 				}
 			);
 		});
@@ -365,7 +366,9 @@
 		state.question = T.makeQuestion(state.level, Math.random, state.question && state.question.midi);
 		state.locked = false;
 		state.attempted = false;
-		els.feedback.textContent = state.level.ear ? 'Listen… then play what you hear' : 'Play this note';
+		els.feedback.textContent = state.level.ear ? 'Listen… then play what you hear' :
+			state.level.intervals ? 'Play a ' + state.question.intervalName + ' above ' + state.question.rootName :
+			'Play this note';
 		els.feedback.className = 'sheet__feedback';
 		els.hudProgress.textContent = (state.index + 1) + ' / ' + ROUND_LENGTH;
 		els.hudStreak.hidden = state.streak < 2;
@@ -402,7 +405,9 @@
 				state.streak++;
 				state.bestStreak = Math.max(state.bestStreak, state.streak);
 			}
-			els.feedback.textContent = 'Correct — ' + state.question.name;
+			els.feedback.textContent = state.level.intervals ?
+				'Correct: ' + state.question.name + ' is a ' + state.question.intervalName + ' above ' + state.question.rootName :
+				'Correct: ' + state.question.name;
 			els.feedback.className = 'sheet__feedback is-good';
 			renderStaff(state.question, '#2e7d4f');
 			flashKey(midi, 'is-good', 650);
@@ -414,11 +419,11 @@
 		} else {
 			state.attempted = true;
 			state.streak = 0;
-			els.feedback.textContent = 'Not ' + T.midiToName(midi) + ' — try again';
+			els.feedback.textContent = 'Not ' + T.midiToName(midi) + '. Try again';
 			els.feedback.className = 'sheet__feedback is-bad';
 			flashKey(midi, 'is-bad', 500);
 			PianoAudio.play(midi, 0.4);
-			if (!state.level.ear) {
+			if (!state.level.ear && !state.level.intervals) {
 				renderStaff(state.question, '#b3342e');
 				setTimeout(function () {
 					if (!state.locked) {
