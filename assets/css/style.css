@@ -249,20 +249,55 @@ a { color: var(--felt); }
 
 .done__actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-/* Piano */
+/* Piano: sticks to the bottom of the viewport while an exercise is open. */
 .piano-wrap {
 	background: linear-gradient(#2a2724, #1d1b18);
 	padding: 14px clamp(8px, 3vw, 32px) 0;
 	border-top: 3px solid var(--felt);
+	position: sticky;
+	bottom: 0;
+	z-index: 5;
+	box-shadow: 0 -10px 24px -14px rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: stretch;
+	gap: 6px;
 }
+
+.piano-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.piano-scroll::-webkit-scrollbar { display: none; }
 
 .piano {
 	position: relative;
 	display: flex;
-	max-width: 900px;
+	max-width: min(880px, calc(var(--white-count, 15) * 64px));
 	margin: 0 auto;
-	height: clamp(96px, 16vw, 150px);
+	height: clamp(110px, 18vw, 150px);
 }
+
+.piano-nav {
+	appearance: none;
+	align-self: center;
+	flex: 0 0 auto;
+	font-size: 14px;
+	line-height: 1;
+	width: 34px;
+	height: 56px;
+	margin-bottom: 14px;
+	border: 1px solid #4d473f;
+	border-radius: 8px;
+	background: #2f2c28;
+	color: #d8cfc0;
+	cursor: pointer;
+}
+
+.piano-nav:disabled { opacity: 0.35; cursor: default; }
 
 .pk {
 	appearance: none;
@@ -326,10 +361,8 @@ a { color: var(--felt); }
 	.top { flex-direction: column; align-items: flex-start; }
 	.top__midi { align-self: stretch; }
 
-	/* Big touch keys in a horizontally scrollable strip, like a real keyboard. */
-	.piano-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+	/* Big touch keys; wide levels page by octave instead of squeezing. */
 	.piano {
-		min-width: calc(var(--white-count, 15) * 44px);
 		height: 138px;
 		margin: 0;
 	}

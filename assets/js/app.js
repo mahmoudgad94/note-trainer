@@ -24,12 +24,8 @@
 		var hi = Math.max.apply(null, level.notes);
 		lo -= T.pitchClass(lo);
 		hi += (12 - T.pitchClass(hi)) % 12;
-		while (hi - lo < 24) {
-			if (hi + 12 <= SAMPLE_MAX) {
-				hi += 12;
-			} else {
-				lo -= 12;
-			}
+		if (hi === lo) {
+			hi = Math.min(SAMPLE_MAX, lo + 12);
 		}
 		return { from: Math.max(SAMPLE_MIN, lo), to: Math.min(SAMPLE_MAX, hi) };
 	}
@@ -48,7 +44,10 @@
 		hudProgress: document.getElementById('hud-progress'),
 		hudStreak: document.getElementById('hud-streak'),
 		pianoWrap: document.getElementById('piano-wrap'),
+		pianoScroll: document.getElementById('piano-scroll'),
 		piano: document.getElementById('piano'),
+		octPrev: document.getElementById('oct-prev'),
+		octNext: document.getElementById('oct-next'),
 		midiConnect: document.getElementById('midi-connect'),
 		midiPill: document.getElementById('midi-pill'),
 	};
@@ -201,21 +200,50 @@
 		}
 	});
 
-	/** On narrow screens the piano scrolls; start centred on the level's range. */
+	/** Octave paging for levels wider than the screen; hidden when everything fits. */
+	function updateOctaveNav() {
+		var scroll = els.pianoScroll;
+		var pageable = scroll.scrollWidth > scroll.clientWidth + 4;
+		els.octPrev.hidden = !pageable;
+		els.octNext.hidden = !pageable;
+		if (pageable) {
+			els.octPrev.disabled = scroll.scrollLeft <= 2;
+			els.octNext.disabled = scroll.scrollLeft >= scroll.scrollWidth - scroll.clientWidth - 2;
+		}
+	}
+
+	function octaveStep() {
+		var white = els.piano.querySelector('.pk:not(.pk--black)');
+		return white ? white.getBoundingClientRect().width * 7 : 300;
+	}
+
 	function centerPianoOn(level) {
-		var wrap = els.pianoWrap;
-		if (wrap.scrollWidth <= wrap.clientWidth) {
-			return;
+		var scroll = els.pianoScroll;
+
+		// Decide fit with the arrows out of the layout, then let updateOctaveNav re-add them.
+		els.octPrev.hidden = true;
+		els.octNext.hidden = true;
+		els.piano.style.minWidth = '';
+		if (window.matchMedia('(max-width: 640px)').matches) {
+			var whites = els.piano.querySelectorAll('.pk:not(.pk--black)').length;
+			var needed = whites * 42;
+			if (needed > els.pianoWrap.clientWidth - 28) {
+				els.piano.style.minWidth = needed + 'px';
+			}
 		}
-		var sorted = level.notes.slice().sort(function (a, b) { return a - b; });
-		var median = sorted[Math.floor(sorted.length / 2)];
-		while (median > PIANO_FROM && T.isBlackKey(median)) {
-			median--;
+
+		if (scroll.scrollWidth > scroll.clientWidth) {
+			var sorted = level.notes.slice().sort(function (a, b) { return a - b; });
+			var median = sorted[Math.floor(sorted.length / 2)];
+			while (median > PIANO_FROM && T.isBlackKey(median)) {
+				median--;
+			}
+			var key = keyEl(median);
+			if (key) {
+				scroll.scrollLeft = key.offsetLeft - scroll.clientWidth / 2 + key.offsetWidth / 2;
+			}
 		}
-		var key = keyEl(median);
-		if (key) {
-			wrap.scrollLeft = key.offsetLeft - wrap.clientWidth / 2 + key.offsetWidth / 2;
-		}
+		updateOctaveNav();
 	}
 
 	function keyEl(midi) {
@@ -399,6 +427,21 @@
 	});
 	document.getElementById('btn-levels').addEventListener('click', function () {
 		show('levels');
+	});
+
+	els.octPrev.addEventListener('click', function () {
+		els.pianoScroll.scrollBy({ left: -octaveStep(), behavior: 'smooth' });
+	});
+	els.octNext.addEventListener('click', function () {
+		els.pianoScroll.scrollBy({ left: octaveStep(), behavior: 'smooth' });
+	});
+	els.pianoScroll.addEventListener('scroll', updateOctaveNav, { passive: true });
+	window.addEventListener('resize', function () {
+		if (state.level && !els.screens.play.hidden) {
+			centerPianoOn(state.level);
+		} else {
+			updateOctaveNav();
+		}
 	});
 
 	buildLevelSelect();

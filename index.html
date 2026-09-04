@@ -67,7 +67,11 @@
 </main>
 
 <div class="piano-wrap" id="piano-wrap" hidden>
-	<div class="piano" id="piano" role="group" aria-label="Piano keyboard"></div>
+	<button type="button" class="piano-nav piano-nav--prev" id="oct-prev" aria-label="Lower octave" hidden>&#9664;</button>
+	<div class="piano-scroll" id="piano-scroll">
+		<div class="piano" id="piano" role="group" aria-label="Piano keyboard"></div>
+	</div>
+	<button type="button" class="piano-nav piano-nav--next" id="oct-next" aria-label="Higher octave" hidden>&#9654;</button>
 </div>
 
 <footer class="foot">
